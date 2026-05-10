@@ -6,5 +6,12 @@
   "workspaceFolder": "/nano-code",
   "remoteUser": "vscode",
   "mounts": ["source=${localWorkspaceFolder},target=/nano-code,type=bind"],
+  "forwardPorts": [18000],
+  "portsAttributes": {
+    "18000": {
+      "label": "app",
+      "onAutoForward": "notify"
+    }
+  },
   "postCreateCommand": "if [ ! -f package.json ]; then bun init -y; fi && bun install || true"
 }
