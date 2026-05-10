@@ -13,5 +13,10 @@
       "onAutoForward": "notify"
     }
   },
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode", "anthropic.claude-code"]
+    }
+  },
   "postCreateCommand": "if [ ! -f package.json ]; then bun init -y; fi && bun install || true"
 }

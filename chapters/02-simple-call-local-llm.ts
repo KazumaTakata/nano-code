@@ -1,5 +1,5 @@
 /**
- * sshで
+ * ssh port forwardingを使用して、ローカルのLLMにアクセスする際のURL
  */
 const LOCAL_LLM_URL = 'http://host.docker.internal:18000/v1/chat/completions';
 
@@ -13,14 +13,13 @@ const callOpenAI = async () => {
         body: JSON.stringify({
             model: 'gpt-oss:20b',
             messages: [
-                { role: 'system', content: 'You are a helpful assistant.' },
-                { role: 'user', content: 'What is the capital of France?' },
+                { role: 'user', content: 'Typescriptについて簡潔に説明してください' },
             ],
         }),
     });
 
     const data = await response.json();
-    console.log(data);
+    console.log(JSON.stringify(data, null, 2));
 }
 
 callOpenAI();
