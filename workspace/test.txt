@@ -1,0 +1,2 @@
+Hello from nano-code-agent
+This is a test file.
