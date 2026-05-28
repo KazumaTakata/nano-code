@@ -32,5 +32,6 @@ if (import.meta.main) {
     );
     // halfAdder.tsファイルを修正してください。修正内容: - 入力の型をbit（0または1）に変更する。 - ^をxorとして実装し直す。これもbit型を用いて実装する。 - &をandとして実装し直す。これもbit型を用いて実装する。
     // halfAdder.tsファイルを修正してください。修正内容: - xor, and関数を^, &演算子を用いて実装してください。型定義は今のままでOKです。
+    // halfAdder.tsファイルのテストを作成してください。
     console.log(result.text);
 }
