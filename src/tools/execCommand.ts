@@ -160,6 +160,7 @@ async function execCommandExecute(args: { command: string }): Promise<string> {
 // ツール定義
 export const execCommand = {
     name: 'execCommand',
+    needsApproval: true, // コマンド実行は承認が必要
     description:
         'ワークスペース内で許可された汎用コマンドを実行する。利用可能: bun test、ls、cat、grep、find、pwd、mkdir',
     parameters: {
