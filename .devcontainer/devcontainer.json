@@ -9,14 +9,19 @@
   "forwardPorts": [18000],
   "portsAttributes": {
     "18000": {
-      "label": "app",
-      "onAutoForward": "notify"
+      "label": "ollama-tunnel",
+      "onAutoForward": "silent"
     }
+  },
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "containerEnv": {
+    "LLM_PROVIDER": "openai",
+    "LLM_MODEL": "gpt-oss:20b"
   },
   "customizations": {
     "vscode": {
       "extensions": ["esbenp.prettier-vscode", "anthropic.claude-code"]
     }
   },
-  "postCreateCommand": "if [ ! -f package.json ]; then bun init -y; fi && bun install || true"
+  "postCreateCommand": "bun install || true"
 }

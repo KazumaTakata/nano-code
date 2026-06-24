@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     ca-certificates \
     sudo \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* 
+    openssh-client \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
 RUN useradd -ms /bin/bash vscode
@@ -20,9 +21,13 @@ USER vscode
 WORKDIR /nano-code
 
 ENV DEVCONTAINER=true
-ENV PATH="/home/vscode/.bun/bin:$PATH"
+# Claude Code (native installer) は ~/.local/bin に入る
+ENV PATH="/home/vscode/.local/bin:/home/vscode/.bun/bin:$PATH"
 
 ENV BUN_INSTALL_CACHE_DIR="/home/vscode/.bun-cache"
 RUN mkdir -p ${BUN_INSTALL_CACHE_DIR}
+
+# Claude Code CLI（スタンドアロン・バイナリ / Node 不要）
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
 CMD [ "bash" ]
