@@ -11,168 +11,173 @@ const MAX_OUTPUT_LENGTH = 2048;
 // 危険な文字の正規表現
 const dangerousChars = /[;&`$]/;
 
-
 type Quote = '"' | "'" | null;
 
 export function parseCommand(input: string): string[] {
-  const tokens: string[] = [];
-  let current = '';
-  let quote: Quote = null;
-  let escaped = false;
+    const tokens: string[] = [];
+    let current = '';
+    let quote: Quote = null;
+    let escaped = false;
 
-  for (const ch of input) {
-    if (quote) {
-      if (escaped) {
+    for (const ch of input) {
+        if (quote) {
+            if (escaped) {
+                current += ch;
+                escaped = false;
+                continue;
+            }
+            if (ch === '\\' && quote === '"') {
+                escaped = true;
+                continue;
+            }
+            if (ch === quote) {
+                quote = null;
+                continue;
+            }
+            current += ch;
+            continue;
+        }
+
+        // クォート開始
+        if (ch === '"' || ch === "'") {
+            quote = ch;
+            continue;
+        }
+
+        // 空白で分割
+        if (/\s/.test(ch)) {
+            if (current.length > 0) {
+                tokens.push(current);
+                current = '';
+            }
+            continue;
+        }
+
         current += ch;
-        escaped = false;
-        continue;
-      }
-      if (ch === '\\' && quote === '"') {
-        escaped = true;
-        continue;
-      }
-      if (ch === quote) {
-        quote = null;
-        continue;
-      }
-      current += ch;
-      continue;
     }
 
-    // クォート開始
-    if (ch === '"' || ch === "'") {
-      quote = ch;
-      continue;
+    if (quote) {
+        throw new Error(`クォートが閉じられていません ${quote}`);
     }
-
-    // 空白で分割
-    if (/\s/.test(ch)) {
-      if (current.length > 0) {
+    if (current.length > 0) {
         tokens.push(current);
-        current = '';
-      }
-      continue;
     }
 
-    current += ch;
-  }
-
-  if (quote) {
-    throw new Error(`クォートが閉じられていません ${quote}`);
-  }
-  if (current.length > 0) {
-    tokens.push(current)
-  }
-
-  return tokens;
+    return tokens;
 }
 
 // コマンド実行
 async function execCommandExecute(args: { command: string }): Promise<string> {
-  if (dangerousChars.test(args.command)) {
-    throw new Error('コマンド連結・置換文字を含むコマンドは実行できません');
-  }
-
-  const parts = parseCommand(args.command);
-  const commandName = parts[0];
-  if (!commandName) {
-    throw new Error('コマンドが空です');
-  }
-  const commandArgs = parts.slice(1);
-
-  // ホワイトリストチェック
-  if (!ALLOWED_COMMANDS.includes(commandName)) {
-    throw new Error(`コマンド ${commandName}は許可されていません。許可されているコマンド ${ALLOWED_COMMANDS.join(', ')}`);
-  }
-
-  // パス引数の検証(ワークスペース内か)
-  for (const arg of commandArgs) {
-    if (arg.includes('/') || arg.includes('\\')) {
-      const resolvedPath = path.resolve(WORKSPACE_ROOT, arg);
-      if (!resolvedPath.startsWith(WORKSPACE_ROOT + path.sep) && resolvedPath !== WORKSPACE_ROOT) {
-        throw new Error(`アクセス拒否: ${arg} はワークスペース外です`);
-      }
+    if (dangerousChars.test(args.command)) {
+        throw new Error('コマンド連結・置換文字を含むコマンドは実行できません');
     }
-  }
 
-  // spawn()で実行
-  return new Promise((resolve, reject) => {
-    let stdout = '';
-    let stderr = '';
-    let outputTruncated = false;
+    const parts = parseCommand(args.command);
+    const commandName = parts[0];
+    if (!commandName) {
+        throw new Error('コマンドが空です');
+    }
+    const commandArgs = parts.slice(1);
 
-    const child = spawn(commandName, commandArgs, {
-      cwd: WORKSPACE_ROOT,
-      timeout: 30000,
-      shell: false, // シェルを介さないのでコマンドインジェクション対策になる
+    // ホワイトリストチェック
+    if (!ALLOWED_COMMANDS.includes(commandName)) {
+        throw new Error(
+            `コマンド ${commandName}は許可されていません。許可されているコマンド ${ALLOWED_COMMANDS.join(', ')}`,
+        );
+    }
+
+    // パス引数の検証(ワークスペース内か)
+    for (const arg of commandArgs) {
+        if (arg.includes('/') || arg.includes('\\')) {
+            const resolvedPath = path.resolve(WORKSPACE_ROOT, arg);
+            if (
+                !resolvedPath.startsWith(WORKSPACE_ROOT + path.sep) &&
+                resolvedPath !== WORKSPACE_ROOT
+            ) {
+                throw new Error(`アクセス拒否: ${arg} はワークスペース外です`);
+            }
+        }
+    }
+
+    // spawn()で実行
+    return new Promise((resolve, reject) => {
+        let stdout = '';
+        let stderr = '';
+        let outputTruncated = false;
+
+        const child = spawn(commandName, commandArgs, {
+            cwd: WORKSPACE_ROOT,
+            timeout: 30000,
+            shell: false, // シェルを介さないのでコマンドインジェクション対策になる
+        });
+
+        child.stdout.on('data', (data: Buffer) => {
+            const chunk = data.toString();
+            if (stdout.length + chunk.length > MAX_OUTPUT_LENGTH) {
+                stdout += chunk.slice(0, MAX_OUTPUT_LENGTH - stdout.length);
+                outputTruncated = true;
+            } else {
+                stdout += chunk;
+            }
+        });
+
+        child.stderr.on('data', (data: Buffer) => {
+            const chunk = data.toString();
+            if (stderr.length + chunk.length > MAX_OUTPUT_LENGTH) {
+                stderr += chunk.slice(0, MAX_OUTPUT_LENGTH - stderr.length);
+                outputTruncated = true;
+            } else {
+                stderr += chunk;
+            }
+        });
+
+        child.on('close', (code: number | null) => {
+            let result = '';
+
+            if (stdout) {
+                result += stdout;
+            }
+            if (stderr) {
+                result += (result ? '\n' : '') + `[stderr] ${stderr}`;
+            }
+            if (outputTruncated) {
+                result += '\n... (出力が長いため省略されました)';
+            }
+
+            if (code !== 0) {
+                result += `\n[終了コード: ${code}]`;
+            }
+
+            resolve(result || '(出力なし)');
+        });
+
+        child.on('error', (err: Error) => {
+            reject(new Error(`コマンド実行エラー: ${err.message}`));
+        });
     });
-
-    child.stdout.on('data', (data: Buffer) => {
-      const chunk = data.toString();
-      if (stdout.length + chunk.length > MAX_OUTPUT_LENGTH) {
-        stdout += chunk.slice(0, MAX_OUTPUT_LENGTH - stdout.length);
-        outputTruncated = true;
-      } else {
-        stdout += chunk;
-      }
-    });
-
-    child.stderr.on('data', (data: Buffer) => {
-      const chunk = data.toString();
-      if (stderr.length + chunk.length > MAX_OUTPUT_LENGTH) {
-        stderr += chunk.slice(0, MAX_OUTPUT_LENGTH - stderr.length);
-        outputTruncated = true;
-      } else {
-        stderr += chunk;
-      }
-    });
-
-    child.on('close', (code: number | null) => {
-      let result = '';
-
-      if (stdout) {
-        result += stdout;
-      }
-      if (stderr) {
-        result += (result ? '\n' : '') + `[stderr] ${stderr}`;
-      }
-      if (outputTruncated) {
-        result += '\n... (出力が長いため省略されました)';
-      }
-
-      if (code !== 0) {
-        result += `\n[終了コード: ${code}]`;
-      }
-
-      resolve(result || '(出力なし)');
-    });
-
-    child.on('error', (err: Error) => {
-      reject(new Error(`コマンド実行エラー: ${err.message}`));
-    });
-  });
 }
 
 // ツール定義
 export const execCommand = {
-  name: 'execCommand',
-  description: 'ワークスペース内で許可された汎用コマンドを実行する。利用可能: bun test、ls、cat、grep、find、pwd、mkdir',
-  parameters: {
-    type: 'object',
-    properties: {
-      command: {
-        type: 'string',
-        description: '実行するコマンド 例 "bun test" "ls -la src/"',
-      },
+    name: 'execCommand',
+    description:
+        'ワークスペース内で許可された汎用コマンドを実行する。利用可能: bun test、ls、cat、grep、find、pwd、mkdir',
+    parameters: {
+        type: 'object',
+        properties: {
+            command: {
+                type: 'string',
+                description: '実行するコマンド 例 "bun test" "ls -la src/"',
+            },
+        },
+        required: ['command'],
     },
-    required: ['command'],
-  },
-  execute: async (args: Record<string, unknown>) => {
-    if (!args.command || typeof args.command !== 'string') {
-      throw new Error('command required');
-    }
-    return execCommandExecute({
-      command: args.command,
-    })
-  },
-}
+    execute: async (args: Record<string, unknown>) => {
+        if (!args.command || typeof args.command !== 'string') {
+            throw new Error('command required');
+        }
+        return execCommandExecute({
+            command: args.command,
+        });
+    },
+};
