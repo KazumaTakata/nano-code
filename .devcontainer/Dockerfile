@@ -2,12 +2,12 @@
 FROM oven/bun:1.3
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    bubblewrap \
     curl \
     git \
     ca-certificates \
     sudo \
     && apt-get clean && rm -rf /var/lib/apt/lists/* 
-
 
 RUN useradd -ms /bin/bash vscode
 RUN usermod -aG sudo vscode \

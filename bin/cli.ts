@@ -6,7 +6,8 @@ import { createModelFromEnv } from '../src/providers/modelFactory';
 import { readFile } from '../src/tools/readFile';
 import { writeFile } from '../src/tools/writeFile';
 import { editFile } from '../src/tools/editFile';
-import { execCommand } from '../src/tools/execCommand';
+import { execCommandSandbox as execCommand } from '../src/tools/execCommandSandbox';
+import { webFetch } from '../src/tools/webFetch';
 
 async function main() {
     const args = process.argv.slice(2);
@@ -38,6 +39,7 @@ async function main() {
             writeFile,
             editFile,
             execCommand,
+            webFetch,
         },
         maxSteps: 15,
         verbose: true,
