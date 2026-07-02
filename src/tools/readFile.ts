@@ -48,6 +48,7 @@ async function readFileExecute(args: { path: string }): Promise<string> {
 // ツール定義
 export const readFile = {
     name: 'readFile',
+    needsApproval: false, // 読み取りのみなので承認不要
     // LLMはdescriptionを読んでこのツールを使うべきか判断するので正確に情報を与える必要がある
     description:
         'ワークスペース内の指定されたパスのファイル内容を文字列として読み込む。ファイルが存在しない場合エラーを返す。100KBを超える巨大ファイルは読み込めない(コンテキストウィンドウ保護のため)。相対パスまたは絶対パスを指定できる。',

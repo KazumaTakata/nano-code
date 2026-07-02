@@ -40,6 +40,7 @@ async function editFileExecute(args: {
 // ツール定義
 export const editFile = {
     name: 'editFile',
+    needsApproval: true, // ファイル編集は承認が必要
     description:
         'ファイルの一部を編集する。oldTextで指定した箇所をnewTextに置き換える。oldTextが複数個所見つかる場合はエラーを返すため、一意に特定できる範囲をしていすること。ファイル全体を読み書きするよりトークン消費が少ない。',
     parameters: {
