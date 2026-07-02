@@ -1,21 +1,22 @@
 {
-  "name": "/nano-code",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "prettier": "^3.8.3"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.1",
-    "@google/genai": "^2.0.1",
-    "openai": "^6.37.0"
-  }
+    "name": "/nano-code",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "agent": "bun run bin/cli.ts"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "prettier": "^3.8.3"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@anthropic-ai/sdk": "^0.95.1",
+        "@google/genai": "^2.0.1",
+        "openai": "^6.37.0"
+    }
 }

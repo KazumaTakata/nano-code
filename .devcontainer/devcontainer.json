@@ -1,22 +1,22 @@
 {
-  "name": "nano-code-devcontainer",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "workspaceFolder": "/nano-code",
-  "remoteUser": "vscode",
-  "mounts": ["source=${localWorkspaceFolder},target=/nano-code,type=bind"],
-  "forwardPorts": [18000],
-  "portsAttributes": {
-    "18000": {
-      "label": "app",
-      "onAutoForward": "notify"
-    }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": ["esbenp.prettier-vscode", "anthropic.claude-code"]
-    }
-  },
-  "postCreateCommand": "if [ ! -f package.json ]; then bun init -y; fi && bun install || true"
+    "name": "nano-code-devcontainer",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceFolder": "/nano-code",
+    "remoteUser": "vscode",
+    "mounts": ["source=${localWorkspaceFolder},target=/nano-code,type=bind"],
+    "forwardPorts": [18000],
+    "portsAttributes": {
+        "18000": {
+            "label": "app",
+            "onAutoForward": "notify"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": ["esbenp.prettier-vscode", "anthropic.claude-code"]
+        }
+    },
+    "postCreateCommand": "if [ ! -f package.json ]; then bun init -y; fi && bun install || true"
 }

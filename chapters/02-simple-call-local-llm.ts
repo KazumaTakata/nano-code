@@ -8,18 +8,15 @@ const callOpenAI = async () => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-
         },
         body: JSON.stringify({
             model: 'gpt-oss:20b',
-            messages: [
-                { role: 'user', content: 'Typescriptについて簡潔に説明してください' },
-            ],
+            messages: [{ role: 'user', content: 'Typescriptについて簡潔に説明してください' }],
         }),
     });
 
     const data = await response.json();
     console.log(JSON.stringify(data, null, 2));
-}
+};
 
 callOpenAI();
