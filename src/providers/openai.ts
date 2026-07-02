@@ -7,6 +7,7 @@ import {
     type Provider,
     type ToolCall,
 } from '../types';
+import type { Chat, ChatCompletion } from 'openai/resources';
 
 export const createOpenAI = (config?: {
     baseURL?: string;
@@ -48,18 +49,20 @@ export const createOpenAI = (config?: {
         });
     };
 
-    const mapFinishReason = (reason: string | null): GenerateTextResult['finishReason'] => {
+    const mapFinishReason = (
+        reason: ChatCompletion.Choice['finish_reason'],
+    ): GenerateTextResult['finishReason'] => {
         switch (reason) {
             case 'stop':
                 return 'stop';
             case 'length':
                 return 'length';
-            case 'tool_call':
+            case 'tool_calls':
                 return 'tool_call';
             case 'content_filter':
                 return 'content_filter';
-            case 'error':
-                return 'error';
+            // case 'error':
+            //     return 'error';
             default:
                 return 'stop';
         }

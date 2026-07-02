@@ -29,6 +29,8 @@ export const writeFile = {
   description: '指定されたパスにファイルを作成または上書きする。ディレクトリが存在しない場合は自動的に作成される。',
   parameters: {
     type: 'object',
+      // ツール実行時に人間の承認が必要かどうか（第5章で使用）
+    needsApproval: true,
     properties: {
       path: {
         type: 'string',
