@@ -6,13 +6,7 @@
     "workspaceFolder": "/nano-code",
     "remoteUser": "vscode",
     "mounts": ["source=${localWorkspaceFolder},target=/nano-code,type=bind"],
-    "forwardPorts": [18000],
-    "portsAttributes": {
-        "18000": {
-            "label": "app",
-            "onAutoForward": "notify"
-        }
-    },
+    "runArgs": ["--add-host=host.docker.internal:host-gateway"],
     "customizations": {
         "vscode": {
             "extensions": ["esbenp.prettier-vscode", "anthropic.claude-code"]
